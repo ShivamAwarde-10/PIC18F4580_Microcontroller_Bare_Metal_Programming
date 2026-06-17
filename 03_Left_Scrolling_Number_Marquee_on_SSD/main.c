@@ -8,7 +8,7 @@ Output Requirements:
 3] The scroll frequency should be 0.5Hz (Approximately, Non Timer Based).
 
 Inputs:
-Static number message in code (10 digit number + 2 spaces)
+1] Static number message in code (10 digit number + 2 spaces)
 
 */
 
