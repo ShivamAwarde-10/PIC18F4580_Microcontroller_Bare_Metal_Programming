@@ -1,3 +1,17 @@
+/*
+Implement a left scrolling number marquee on SSDs.
+
+Output Requirements:
+
+As soon as the board is powered up or reset, a static message (hardcoded) should start scrolling from right to left on SSD.
+The scroll should repeat indefinitely.
+The scroll frequency should be 0.5Hz (Approximately, Non Timer Based).
+
+Inputs:
+Static number message in code (10 digit number + 2 spaces)
+
+*/
+
 #include <xc.h>
 #include "ssd_display.h"
 
