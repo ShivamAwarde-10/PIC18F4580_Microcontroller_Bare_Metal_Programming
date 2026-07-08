@@ -1,3 +1,13 @@
+1] ecu1_main.c
+
+/*
+ * File:   ecu1_main.c
+ * Author: shivam
+ *
+ * Created on 6 July, 2026, 8:15 AM
+ */
+
+
 #include <xc.h>
 #include "adc.h"
 #include "can.h"
@@ -10,9 +20,13 @@ void main(void)
     init_digital_keypad();
     init_adc();
     init_uart();
+    init_can();
 
     // Array to store Gear names
-    unsigned char *arr[8] = {"GN", "G1", "G2", "G3", "G4", "G5", "GR", "C"};
+    unsigned char *arr[8] = {"N", "1", "2", "3", "4", "5", "R", "C"};
+    
+    unsigned char speed_data[2];
+    unsigned char gear_data[1];
 
     while (1)
     {
@@ -20,14 +34,25 @@ void main(void)
 
         unsigned char gear = get_gear_pos();   // Read current Gear Position
         
-        puts("\n\r");                          // Display Speed
+        // Convert Speed into ASCII 
+        speed_data[0] = (speed / 10) + '0';
+        speed_data[1] = (speed % 10) + '0';
+        
+        // Store Gear 
+        gear_data[0] = gear;
+        
+        // Transmit over CAN 
+        can_transmit(SPEED_MSG_ID, speed_data, 2);
+        can_transmit(GEAR_MSG_ID, gear_data, 1);
+        
+        puts("\n\r");                          // UART Display Speed 
         puts("speed-> ");
 
-        putch(speed / 10 + '0');
-        putch(speed % 10 + '0');
+        putch(speed_data[0]);
+        putch(speed_data[1]);
 
         puts("\n\r");                          // Display Gear
-        puts("gear -> ");
+        puts("gear-> ");
 
         puts(arr[gear]);
     }
@@ -36,26 +61,14 @@ void main(void)
 }
 
 
-#ifndef DIGITAL_KEYPAD_H
-#define DIGITAL_KEYPAD_H
+2] ecu1_sensor.c
 
-#define LEVEL					     	0
-#define STATE_CHANGE			       	1
-
-#define KEY_PORT					PORTC
-
-#define SWITCH1					0x0E
-#define SWITCH2					0x0D
-#define SWITCH3					0x0B
-#define SWITCH4					0x07
-#define ALL_RELEASED					0x0F
-
-#define INPUT_PINS					0x0F
-
-void init_digital_keypad(void);
-unsigned char read_digital_keypad(unsigned char detection_type);
-
-#endif
+/*
+ * File:   ecu1_sensor.c
+ * Author: shivam
+ *
+ * Created on 6 July, 2026, 8:14 AM
+ */
 
 
 #include "ecu1_sensor.h"
@@ -111,3 +124,26 @@ unsigned char get_gear_pos()
 
     return gear;
 }
+
+
+3] ecu1_sensor.h
+
+#ifndef ECU1_SENSOR_H
+#define	ECU1_SENSOR_H
+
+#include <stdint.h>
+#include "digital_keypad.h"
+#include <xc.h>
+
+#define MAX_GEAR 6
+#define SPEED_ADC_CHANNEL 0x04
+#define GEAR_UP             SWITCH1
+#define GEAR_DOWN           SWITCH2
+#define COLLISION           SWITCH3
+
+uint16_t get_speed();
+unsigned char get_gear_pos();
+//unsigned char get_collision_status();
+
+#endif	/* ECU1_SENSOR_H */
+
